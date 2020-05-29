@@ -1,6 +1,7 @@
 // dev
 
 require('dotenv').config();
+require('./models/db');
 const logger = require('morgan');
 
 // /dev
