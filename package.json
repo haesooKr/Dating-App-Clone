@@ -4,6 +4,10 @@
   "description": "Cloning Tinder Server",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
   "dependencies": {
     "bcrypt": "^4.0.1",
     "cookie-parser": "^1.4.5",
