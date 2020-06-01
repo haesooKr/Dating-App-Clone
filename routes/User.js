@@ -84,4 +84,19 @@ userRouter.get('/profile', passport.authenticate('jwt', { session: false }), (re
 })
 
 
+userRouter.post('/update', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { username } = req.user;
+  const { essay } = req.body;
+  const filter = { username }
+  const update = { essay }
+  User.findOneAndUpdate(filter, update, (err) => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    } else {
+      res.status(200).json({ body: "Successfully updated", error: false })
+    }
+  })
+})
+
+
 module.exports = userRouter;
