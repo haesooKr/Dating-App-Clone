@@ -63,4 +63,12 @@ userRouter.get('/logout', passport.authenticate('jwt', { session: false }), (req
   res.json({ user: { username: "", role: "" }, success: true })
 });
 
+userRouter.get('/admin', passport.authenticate('jwt', { session: false }), (req, res) => {
+  if(req.user.role === 'admin'){
+    res.status(200).json({ message: { body: "You are an admin", error: false }})
+  } else {
+    res.status(403).json({ message: { body: "You have no access to here", error: true }})
+  }
+});
+
 module.exports = userRouter;
