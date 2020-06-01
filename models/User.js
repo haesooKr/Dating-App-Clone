@@ -8,8 +8,6 @@ const UserSchema = mongoose.Schema({
     type: String,
     required: true,
     unqiue: true,
-    min: 6,
-    max: 15,
   },
   password : {
     type : String,
@@ -30,9 +28,10 @@ const UserSchema = mongoose.Schema({
     enum: ['user', 'admin'],
     required: true
   },
-  discription: {
+  essay: {
     type: String,
-    max: 100
+    max: 100,
+    default: ''
   },
   pictures: [{type: ObjectId, ref: 'Picture'}],
   likedUsers: [{type: ObjectId, ref: 'User'}],
@@ -41,6 +40,16 @@ const UserSchema = mongoose.Schema({
   likedBy: [{type: ObjectId, ref: 'User'}],
   messages: [{type: ObjectId, ref: 'Message'}]
 })
+
+UserSchema.path('username').validate(function(x){
+  return x.length > 6 && x.length < 15;
+}, 'Username (6 ~ 15 characters)')
+
+UserSchema.path('password').validate(function(x){
+  return x.length > 6 && x.length < 20;
+}, 'Password (6 ~ 20 characters)')
+
+
 
 UserSchema.pre('save', function(next){
   console.log("PRE SAVE")
@@ -59,15 +68,16 @@ UserSchema.pre('save', function(next){
 UserSchema.methods.comparePassword = function(password, cb){
   console.log("COMPARE PASSWORD")
   bcrypt.compare(password, this.password, (err, same) => {
-    if(err){
+    if(err)
       return cb(err);
-    } else {
-      if(!same){
+    else {
+      if(!same)
         return cb(null, same);
-      }
       return cb(null, this);
     }
   })
 }
+
+
 
 module.exports = mongoose.model('User', UserSchema, 'Users');
