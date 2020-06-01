@@ -7,7 +7,6 @@ require('dotenv').config();
 
 const cookieExtractor = req => {
   let token = null;
-  console.log("req.cookies", req.cookies)
   if(req & req.cookies){
     token = req.cookies["access_token"];
   }
@@ -16,9 +15,8 @@ const cookieExtractor = req => {
 
 passport.use(new JwtStrategy({
   jwtFromRequest: cookieExtractor,
-  secretOrKey: process.env.SECRET;
+  secretOrKey: process.env.SECRET
 }, (payload, done) => {
-  console.log("payload", payload)
   User.findById({ _id : payload.sub }, (err, user) => {
     if(err)
       return done(err, false);
@@ -30,7 +28,6 @@ passport.use(new JwtStrategy({
 }))
 
 passport.use(new LocalStrategy((username, password, done) => {
-console.log("done", done)
   User.findOne({ username }, (err, user) => {
     if(err)
       return done(err);
