@@ -150,9 +150,29 @@ userRouter.get('/like/:username', passport.authenticate('jwt', { session: false 
   })
 })
 
+userRouter.get('/people', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { _id, username } = req.user;
+  let passedUsers = [];
+  await User.findOne({ username }, { likedUsers: 1, dislikedUsers: 1, superLikedUsers: 1 }, (err, doc) => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    } else {
+      passedUsers = [_id, ...doc.likedUsers, ...doc.dislikedUsers, ...doc.superLikedUsers]
+
+      User.find({ _id: { $nin: passedUsers }}, { username: 1, firstName: 1, lastName: 1, sex: 1, essay: 1, pictures: 1}, (err, doc) => {
+        if(err){
+          sendHTTPStatusAndJSON(res, 500);
+        } else {
+          res.status(200).json({ people: doc, authenticated: true });
+        }
+      })
+    }
+  })
+})
+
 userRouter.get('/matches', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { username } = req.user;
-  User.findOne({ username }).populate('matches', 'firstName lastName sex essay pictures').exec((err, doc) => {
+  User.findOne({ username }).populate('matches', 'username firstName lastName sex essay pictures').exec((err, doc) => {
     if(err)
       sendHTTPStatusAndJSON(res, 500);
     else {
