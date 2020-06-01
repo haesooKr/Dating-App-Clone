@@ -118,16 +118,32 @@ userRouter.get('/like/:username', passport.authenticate('jwt', { session: false 
     if(err){
       sendHTTPStatusAndJSON(res, 500);
     } else {
-      User.findOneAndUpdate({ username }, { $addToSet: { likedUsers: doc._id }}, (err, doc) => {
-        if(err){
-          sendHTTPStatusAndJSON(res, 500);
-        } else {
-          sendHTTPStatusAndJSON(res, 200, "Successfully liked user", false);
-        }
-      })
+      if(doc.likedUsers.indexOf(_id) > -1){
+        // if the user also likes me
+        User.updateOne({ _id: doc._id }, { $addToSet: { matches: _id }}, (err) => {
+          if(err){
+            sendHTTPStatusAndJSON(res, 500);
+          } else {
+            User.updateOne({ username }, { $addToSet: { likedUsers: doc._id, matches: doc._id }}, (err) => {
+              if(err){
+                sendHTTPStatusAndJSON(res, 500);
+              } else {
+                sendHTTPStatusAndJSON(res, 200, "Successfully Matched", false);
+              }
+            })
+          }
+        });
+      } else {
+        User.updateOne({ username }, { $addToSet: { likedUsers: doc._id }}, (err) => {
+          if(err){
+            sendHTTPStatusAndJSON(res, 500);
+          } else {
+            sendHTTPStatusAndJSON(res, 200, "Successfully liked user", false);
+          }
+        })
+      }
     }
   })
 })
-
 
 module.exports = userRouter;
