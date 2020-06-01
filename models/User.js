@@ -1,8 +1,3 @@
-// [] DB SCHEMA - username, password, 
-// pictures(array), address, description, sex, 
-// likedUsers, superLikedUsers, disLikedUsers, 
-// likedBy, messages ( message: user, content )
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
@@ -41,10 +36,32 @@ const UserSchema = mongoose.Schema({
   messages: [{type: ObjectId, ref: 'Message'}]
 })
 
-UserSchema.pre('save', function(password, callback){
-  bcrypt.compare(password, this.password, (err, isMatch) => {
+UserSchema.pre('save', function(next){
+console.log("next", next)
+  if(!this.isModified('password')){
+    return next()
+  }
+  bcrypt.hash(this.password, 12, (err, hash) => {
     if(err){
-      return cb(err);
+      return next(err);
     }
+    this.password = hash;
+    next();
   })
 })
+
+UserSchema.methods.comparePassword = function(password, cb){
+  console.log("UserSchema.methods.comparePassword -> cb", cb)
+  bcrypt.compare(password, this.password, (err, same) => {
+    if(err){
+      return cb(err);
+    } else {
+      if(!same){
+        return cb(null, same);
+      }
+      return cb(null, this);
+    }
+  })
+}
+
+module.exports = mongoose.model('User', UserSchema);
