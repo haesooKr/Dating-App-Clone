@@ -4,6 +4,7 @@ const passport = require('passport');
 const passportConfig = require('../passport');
 const JWT = require('jsonwebtoken');
 const User = require('../models/User');
+const Room = require('../models/Room');
 
 require('dotenv').config();
 
@@ -78,7 +79,6 @@ userRouter.get('/authenticated', passport.authenticate('jwt', { session: false }
 
 userRouter.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { username, firstName, lastName, email, sex, essay } = req.user;
-  console.log("req.user", req.user)
   
   res.status(200).json({ isAuthenticated: true, user: { username, email, firstName, lastName, sex, essay}})
 })
@@ -114,17 +114,21 @@ userRouter.get('/like/:username', passport.authenticate('jwt', { session: false 
   const { _id, username } = req.user;
   const user = req.params.username;
 
-  User.findOneAndUpdate({ username: user }, { $addToSet: { likedBy: _id }}, (err, doc) => {
+  User.findOneAndUpdate({ username: user }, { $addToSet: { likedBy: _id }}, async (err, doc) => {
     if(err){
       sendHTTPStatusAndJSON(res, 500);
     } else {
       if(doc.likedUsers.indexOf(_id) > -1){
         // if the user also likes me
-        User.updateOne({ _id: doc._id }, { $addToSet: { matches: _id }}, (err) => {
+        const room = await Room.create({
+          participants: [ _id, doc._id]
+        });
+
+        User.updateOne({ _id: doc._id }, { $addToSet: { matches: _id , rooms: room._id }}, (err) => {
           if(err){
             sendHTTPStatusAndJSON(res, 500);
           } else {
-            User.updateOne({ username }, { $addToSet: { likedUsers: doc._id, matches: doc._id }}, (err) => {
+            User.updateOne({ username }, { $addToSet: { likedUsers: doc._id, matches: doc._id, rooms: room._id }}, (err) => {
               if(err){
                 sendHTTPStatusAndJSON(res, 500);
               } else {
