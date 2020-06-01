@@ -7,6 +7,13 @@ const User = require('../models/User');
 
 require('dotenv').config();
 
+const signToken = userID => {
+  return new JWT.sign({
+    iss: process.env.SECRET,
+    sub: userID
+  }, process.env.SECRET, { expiresIn: "1h" })
+}
+
 const sendHTTPStatusAndJSON = (res, code, body, error) => {
   if(code === 500){
     return res.status(500).json({ message: { body: "Error has occured", error: true }})
@@ -41,5 +48,14 @@ userRouter.post('/register', (req, res) => {
     }
   })
 });
+
+userRouter.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
+  if(req.isAuthenticated()){
+    const { _id, username, role } = req.user;
+    const token = signToken(_id);
+    res.cookie('access_token', token, { httpOnly: true, sameSite: true })
+    res.status(200).json({ isAuthenticated: true, user: { username, role }});
+  }
+})
 
 module.exports = userRouter;
