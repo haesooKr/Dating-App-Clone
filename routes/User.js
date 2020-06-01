@@ -89,7 +89,7 @@ userRouter.post('/update', passport.authenticate('jwt', { session: false }), (re
   const { essay } = req.body;
   const filter = { username }
   const update = { essay }
-  User.findOneAndUpdate(filter, update, (err) => {
+  User.updateOne(filter, update, (err) => {
     if(err){
       sendHTTPStatusAndJSON(res, 500);
     } else {
@@ -101,7 +101,7 @@ userRouter.post('/update', passport.authenticate('jwt', { session: false }), (re
 
 userRouter.get('/delete', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { _id } = req.user;
-  User.findByIdAndDelete({ _id }, err => {
+  User.deleteOne({ _id }, err => {
     if(err){
       sendHTTPStatusAndJSON(res, 500);
     } else {
@@ -109,5 +109,25 @@ userRouter.get('/delete', passport.authenticate('jwt', { session: false }), (req
     }
   })
 })
+
+userRouter.get('/like/:username', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { _id, username } = req.user;
+  const user = req.params.username;
+
+  User.findOneAndUpdate({ username: user }, { $addToSet: { likedBy: _id }}, (err, doc) => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    } else {
+      User.findOneAndUpdate({ username }, { $addToSet: { likedUsers: doc._id }}, (err, doc) => {
+        if(err){
+          sendHTTPStatusAndJSON(res, 500);
+        } else {
+          sendHTTPStatusAndJSON(res, 200, "Successfully liked user", false);
+        }
+      })
+    }
+  })
+})
+
 
 module.exports = userRouter;
