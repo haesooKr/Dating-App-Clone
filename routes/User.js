@@ -99,4 +99,15 @@ userRouter.post('/update', passport.authenticate('jwt', { session: false }), (re
 })
 
 
+userRouter.get('/delete', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { _id } = req.user;
+  User.findByIdAndDelete({ _id }, err => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    } else {
+      res.json({ body: "Successfully deleted account", error: false })
+    }
+  })
+})
+
 module.exports = userRouter;
