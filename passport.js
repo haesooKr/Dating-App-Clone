@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const cookieExtractor = req => {
   let token = null;
-  if(req & req.cookies){
+  if(req.cookies.access_token){
     token = req.cookies["access_token"];
   }
   return token;
