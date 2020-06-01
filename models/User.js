@@ -7,12 +7,18 @@ const UserSchema = mongoose.Schema({
   username: {
     type: String,
     required: true,
+    unqiue: true,
     min: 6,
     max: 15,
   },
   password : {
     type : String,
     required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
   },
   sex: {
     type: String,
@@ -28,7 +34,7 @@ const UserSchema = mongoose.Schema({
     type: String,
     max: 100
   },
-  pictures: [{type: ObjectId, ref: 'User'}],
+  pictures: [{type: ObjectId, ref: 'Picture'}],
   likedUsers: [{type: ObjectId, ref: 'User'}],
   dislikedUsers: [{type: ObjectId, ref: 'User'}],
   superLikedUsers: [{type: ObjectId, ref: 'User'}],
@@ -37,7 +43,7 @@ const UserSchema = mongoose.Schema({
 })
 
 UserSchema.pre('save', function(next){
-console.log("next", next)
+  console.log("PRE SAVE")
   if(!this.isModified('password')){
     return next()
   }
@@ -51,7 +57,7 @@ console.log("next", next)
 })
 
 UserSchema.methods.comparePassword = function(password, cb){
-  console.log("UserSchema.methods.comparePassword -> cb", cb)
+  console.log("COMPARE PASSWORD")
   bcrypt.compare(password, this.password, (err, same) => {
     if(err){
       return cb(err);
@@ -64,4 +70,4 @@ UserSchema.methods.comparePassword = function(password, cb){
   })
 }
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', UserSchema, 'Users');
