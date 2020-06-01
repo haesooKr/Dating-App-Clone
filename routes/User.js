@@ -8,7 +8,7 @@ const User = require('../models/User');
 require('dotenv').config();
 
 const signToken = userID => {
-  return new JWT.sign({
+  return JWT.sign({
     iss: process.env.SECRET,
     sub: userID
   }, process.env.SECRET, { expiresIn: "1h" })
@@ -53,9 +53,14 @@ userRouter.post('/login', passport.authenticate('local', { session: false }), (r
   if(req.isAuthenticated()){
     const { _id, username, role } = req.user;
     const token = signToken(_id);
-    res.cookie('access_token', token, { httpOnly: true, sameSite: true })
+    res.cookie('access_token', token, { httpOnly: true, sameSite: true });
     res.status(200).json({ isAuthenticated: true, user: { username, role }});
   }
-})
+});
+
+userRouter.get('/logout', passport.authenticate('jwt', { session: false }), (req, res) => {
+  res.clearCookie('access_token');
+  res.json({ user: { username: "", role: "" }, success: true })
+});
 
 module.exports = userRouter;
