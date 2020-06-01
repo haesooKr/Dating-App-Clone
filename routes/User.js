@@ -22,7 +22,7 @@ const sendHTTPStatusAndJSON = (res, code, body, error) => {
 }
 
 userRouter.post('/register', (req, res) => {
-  const { username, password, email, sex, role } = req.body;
+  const { username, firstName, lastName, password, email, sex, role, essay } = req.body;
   User.findOne({ username }, (err, user) => {
     if(err)
       sendHTTPStatusAndJSON(res, 500);
@@ -35,7 +35,7 @@ userRouter.post('/register', (req, res) => {
         if(user)
           sendHTTPStatusAndJSON(res, 400, "Email is already taken", true);
         else {
-          const newUser = new User({ username, password, email, sex, role });
+          const newUser = new User({ username, firstName, lastName, password, email, sex, role, essay });
           newUser.save(err => {
             if(err){
               sendHTTPStatusAndJSON(res, 500);
@@ -75,5 +75,13 @@ userRouter.get('/authenticated', passport.authenticate('jwt', { session: false }
   const { username, role } = req.user;
   res.status(200).json({ isAuthenticated: true, user: { username, role }});
 });
+
+userRouter.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { username, firstName, lastName, email, sex, essay } = req.user;
+  console.log("req.user", req.user)
+  
+  res.status(200).json({ isAuthenticated: true, user: { username, email, firstName, lastName, sex, essay}})
+})
+
 
 module.exports = userRouter;
