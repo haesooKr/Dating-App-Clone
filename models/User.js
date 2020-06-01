@@ -46,6 +46,7 @@ const UserSchema = mongoose.Schema({
   dislikedUsers: [{type: ObjectId, ref: 'User'}],
   superLikedUsers: [{type: ObjectId, ref: 'User'}],
   likedBy: [{type: ObjectId, ref: 'User'}],
+  matches: [{type: ObjectId, ref: 'User'}],
   messages: [{type: ObjectId, ref: 'Message'}]
 })
 
