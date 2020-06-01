@@ -47,7 +47,7 @@ const UserSchema = mongoose.Schema({
   superLikedUsers: [{type: ObjectId, ref: 'User'}],
   likedBy: [{type: ObjectId, ref: 'User'}],
   matches: [{type: ObjectId, ref: 'User'}],
-  messages: [{type: ObjectId, ref: 'Message'}]
+  rooms: [{type: ObjectId, ref: 'Room'}]
 })
 
 UserSchema.path('username').validate(function(x){
