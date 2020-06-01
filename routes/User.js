@@ -146,4 +146,15 @@ userRouter.get('/like/:username', passport.authenticate('jwt', { session: false 
   })
 })
 
+userRouter.get('/matches', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { username } = req.user;
+  User.findOne({ username }).populate('matches', 'firstName lastName sex essay pictures').exec((err, doc) => {
+    if(err)
+      sendHTTPStatusAndJSON(res, 500);
+    else {
+      res.status(200).json({ matches: doc.matches, authenticated: true });
+    }
+  })
+})
+
 module.exports = userRouter;
