@@ -9,12 +9,16 @@ const logger = require('morgan');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
+const userRouter = require('./routes/User');
+
 const app = express();
 app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
+
+app.use('/user', userRouter)
 
 
 app.listen(PORT, () => {
