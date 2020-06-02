@@ -41,7 +41,7 @@ const UserSchema = mongoose.Schema({
     max: 100,
     default: "",
   },
-  pictures: [{ type: ObjectId }],
+  pictures: [{ type: String }],
   likedUsers: [{ type: ObjectId, ref: "User" }],
   dislikedUsers: [{ type: ObjectId, ref: "User" }],
   superLikedUsers: [{ type: ObjectId, ref: "User" }],
