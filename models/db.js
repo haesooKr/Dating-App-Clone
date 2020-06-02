@@ -1,6 +1,12 @@
-const mongoose = require('mongoose');
+require('dotenv').config();
 
-mongoose.connect("mongodb://localhost:27017/Tinder", {
+const mongoose = require('mongoose');
+const path = require('path');
+const crypto = require('crypto');
+const multer = require('multer');
+const GridFsStorage = require('multer-gridfs-storage');
+
+mongoose.connect(process.env.MongoURI, {
   useNewUrlParser: true,
   useFindAndModify: false,
   useUnifiedTopology: true,
@@ -13,4 +19,25 @@ mongoose.connect("mongodb://localhost:27017/Tinder", {
   }
 });
 
-module.exports = mongoose;
+const storage = new GridFsStorage({
+  options: { useUnifiedTopology: true },
+  url: process.env.MongoURI,
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err) {
+          return reject(err);
+        }
+        const filename = buf.toString('hex') + path.extname(file.originalname);
+        const fileInfo = {
+          filename: filename,
+          bucketName: 'uploads'
+        };
+        resolve(fileInfo);
+      });
+    });
+  }
+});
+const upload = multer({ storage });
+
+module.exports = { mongoose, upload };
