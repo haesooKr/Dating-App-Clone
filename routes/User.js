@@ -9,6 +9,20 @@ const Message = require('../models/Message');
 
 require('dotenv').config();
 
+function idCheck(req, res, next){
+  const username = req.body.username;
+  User.findOne({ username }, (err, doc) => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    }
+    if(!doc){
+      res.status(401).json({ message: { isAuthenticated: false, user: { username: "", role: "" }, body: "Username does not exist", error: true }})
+    } else {
+      next();
+    }
+  })
+}
+
 const signToken = userID => {
   return JWT.sign({
     iss: process.env.SECRET,
@@ -51,7 +65,7 @@ userRouter.post('/register', (req, res) => {
   })
 });
 
-userRouter.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
+userRouter.post('/login', idCheck, passport.authenticate('local', { session: false }), (req, res) => {
   if(req.isAuthenticated()){
     const { _id, username, role } = req.user;
     const token = signToken(_id);
