@@ -5,6 +5,7 @@ const passportConfig = require('../passport');
 const JWT = require('jsonwebtoken');
 const User = require('../models/User');
 const Room = require('../models/Room');
+const Message = require('../models/Message');
 
 require('dotenv').config();
 
@@ -179,6 +180,33 @@ userRouter.get('/matches', passport.authenticate('jwt', { session: false }), (re
       res.status(200).json({ matches: doc.matches, authenticated: true });
     }
   })
+})
+
+userRouter.get('/rooms', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { username } = req.user;
+  User.findOne({ username }, { rooms: 1 }, (err, doc) => {
+    if(err)
+      sendHTTPStatusAndJSON(res, 500);
+    else
+      res.status(200).json({ rooms: doc.rooms, authenticate: true });
+  })
+})
+
+userRouter.post('/sendMessage', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { username } = req.user;
+  const { content, roomId } = req.body;
+  const message = await Message.create({ sender: username, content });
+  console.log(message);
+
+  Room.findOneAndUpdate({ _id: roomId }, { $addToSet: { messages: message._id }}, (err, doc) => {
+    if(err){
+      sendHTTPStatusAndJSON(res,500);
+    } else {
+      console.log(doc);
+      res.json({ body: "Successfully sent message", error: false })
+    }
+  });
+  
 })
 
 module.exports = userRouter;
