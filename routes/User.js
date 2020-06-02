@@ -192,6 +192,17 @@ userRouter.get('/rooms', passport.authenticate('jwt', { session: false }), (req,
   })
 })
 
+userRouter.post('/room', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { roomId } = req.body;
+  Room.findOne({ _id: roomId }).populate('messages').exec((err, doc) => {
+    if(err)
+      sendHTTPStatusAndJSON(res, 500);
+    else {
+      res.status(200).json({ messages: doc.messages, authenticated: true });
+    }
+  })
+})
+
 userRouter.post('/sendMessage', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { username } = req.user;
   const { content, roomId } = req.body;
@@ -206,7 +217,6 @@ userRouter.post('/sendMessage', passport.authenticate('jwt', { session: false })
       res.json({ body: "Successfully sent message", error: false })
     }
   });
-  
 })
 
 module.exports = userRouter;
