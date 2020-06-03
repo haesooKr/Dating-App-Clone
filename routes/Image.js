@@ -26,35 +26,18 @@ imageRouter.post("/upload", passport.authenticate('jwt', { session: false }), up
     if(err){
       res.status(500).json({ message: { body: "Error has occured", error: true }});
     } else {
+      if(doc.picture){
+        gfs.files.findOneAndDelete({ filename: doc.picture }, (err, file) => {
+          mongoose.connection.db.collection('uploads.chunks', function(err, collection){
+            collection.deleteMany({ files_id: new ObjectId( file.value._id ) })
+          })  
+        })
+      }
       res.status(200).json({ filename })
     }
   })
 });
 
-//change picture router
-
-imageRouter.get("/picture", passport.authenticate('jwt', { session: false }), (req, res) => {
-  const username = req.user.username;
-  User.findOne({ username }, { picture: 1 }, (err, doc) => {
-    if(err){
-      res.status(500).json({ message: { body: "Error has occured", error: true }});
-    }
-    const { picture } = doc;
-
-    res.json({ picture })
-  })
-});
-
-imageRouter.post('/delete', (req, res) => {
-  const { _id } = req.body;
-  gfs.files.deleteOne({ _id: new ObjectId( _id ) }, (err, file) => {
-    mongoose.connection.db.collection('uploads.chunks', function(err, collection){
-      collection.deleteMany({ files_id: new ObjectId( _id ) }, (err, file) => {
-        res.json('Successfully Deleted Item')
-      })
-    })  
-  })
-})
 
 imageRouter.get("/show/:filename", (req, res) => {
   gfs.files.findOne({filename: req.params.filename}, (err, file) => {
