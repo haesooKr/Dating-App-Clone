@@ -158,6 +158,43 @@ userRouter.post('/like', passport.authenticate('jwt', { session: false }), (req,
   })
 })
 
+userRouter.post('/dislike', passport.authenticate('jwt', { session: false }), (req, res) => {
+  const { _id  } = req.user;
+  const user_id = req.body._id
+
+  User.findByIdAndUpdate(_id, { $addToSet: { dislikedUsers: user_id }}, (err, doc) => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    } else {
+      sendHTTPStatusAndJSON(res, 200, "Successfully disliked user", false);
+    }
+  })
+})
+
+userRouter.post('/superlike', passport.authenticate('jwt', { session: false }), async (req, res) => {
+  const { _id } = req.user;
+  const user_id = req.body._id
+
+  const room = await Room.create({
+    participants: [ _id, user_id ]
+  });
+
+  User.findByIdAndUpdate(user_id, { $addToSet: { likedBy: _id, matches: _id, rooms: room._id }}, (err) => {
+    if(err){
+      sendHTTPStatusAndJSON(res, 500);
+    } else {
+      User.findByIdAndUpdate(_id, { $addToSet: { likedUsers: user_id, matches: user_id, rooms: room._id }}, (err) => {
+        if(err){
+          sendHTTPStatusAndJSON(res, 500);
+        } else {
+          sendHTTPStatusAndJSON(res, 200, "Successfully superliked", false);
+        }
+      });
+    }
+  })
+})
+
+
 
 userRouter.get('/people', passport.authenticate('jwt', { session: false }), async (req, res) => {
   const { _id, username, sex } = req.user;
