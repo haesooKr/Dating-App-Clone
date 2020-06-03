@@ -22,7 +22,7 @@ conn.once('open', function () {
 imageRouter.post("/upload", passport.authenticate('jwt', { session: false }), upload.single('file'), (req, res) => {
   const { filename } = req.file;
   const username = req.user.username;
-  User.findOneAndUpdate({ username }, { $addToSet: { pictures: filename }}, ( err, doc ) => {
+  User.findOneAndUpdate({ username }, { picture: filename }, ( err, doc ) => {
     if(err){
       res.status(500).json({ message: { body: "Error has occured", error: true }});
     } else {
@@ -31,15 +31,17 @@ imageRouter.post("/upload", passport.authenticate('jwt', { session: false }), up
   })
 });
 
-imageRouter.get("/pictures", (req, res) => {
+//change picture router
+
+imageRouter.get("/picture", passport.authenticate('jwt', { session: false }), (req, res) => {
   const username = req.user.username;
-  User.findOne({ username }, { pictures: 1 }, (err, doc) => {
+  User.findOne({ username }, { picture: 1 }, (err, doc) => {
     if(err){
       res.status(500).json({ message: { body: "Error has occured", error: true }});
     }
-    const { pictures } = doc;
+    const { picture } = doc;
 
-    res.json({ pictures })
+    res.json({ picture })
   })
 });
 
@@ -54,7 +56,7 @@ imageRouter.post('/delete', (req, res) => {
   })
 })
 
-imageRouter.get("show/:filename", (req, res) => {
+imageRouter.get("/show/:filename", (req, res) => {
   gfs.files.findOne({filename: req.params.filename}, (err, file) => {
     if(!file || file.length === 0){
       return res.status(404).json({
