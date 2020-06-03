@@ -67,10 +67,10 @@ userRouter.post('/register', (req, res) => {
 
 userRouter.post('/login', idCheck, passport.authenticate('local', { session: false }), (req, res) => {
   if(req.isAuthenticated()){
-    const { _id, username, role } = req.user;
+    const { _id, username, firstName, lastName, sex, essay, role, picture } = req.user;
     const token = signToken(_id);
     res.cookie('access_token', token, { httpOnly: true, sameSite: true });
-    res.status(200).json({ isAuthenticated: true, user: { username, role }});
+    res.status(200).json({ isAuthenticated: true, user: { username, firstName, lastName, sex, essay, role, picture }});
   }
 });
 
@@ -88,16 +88,9 @@ userRouter.get('/admin', passport.authenticate('jwt', { session: false }), (req,
 });
 
 userRouter.get('/authenticated', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const { username, role } = req.user;
-  res.status(200).json({ isAuthenticated: true, user: { username, role }});
+  const { username, firstName, lastName, sex, essay, role, picture } = req.user;
+  res.status(200).json({ isAuthenticated: true, user: { username, firstName, lastName, sex, essay, role, picture }});
 });
-
-userRouter.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const { username, firstName, lastName, email, sex, essay } = req.user;
-  
-  res.status(200).json({ isAuthenticated: true, user: { username, email, firstName, lastName, sex, essay}})
-})
-
 
 userRouter.post('/update', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { username } = req.user;
@@ -125,11 +118,11 @@ userRouter.get('/delete', passport.authenticate('jwt', { session: false }), (req
   })
 })
 
-userRouter.get('/like/:username', passport.authenticate('jwt', { session: false }), (req, res) => {
+userRouter.post('/like', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { _id, username } = req.user;
-  const user = req.params.username;
+  const user_id = req.body._id
 
-  User.findOneAndUpdate({ username: user }, { $addToSet: { likedBy: _id }}, async (err, doc) => {
+  User.findOneAndUpdate({ _id: user_id }, { $addToSet: { likedBy: _id }}, async (err, doc) => {
     if(err){
       sendHTTPStatusAndJSON(res, 500);
     } else {
@@ -165,16 +158,17 @@ userRouter.get('/like/:username', passport.authenticate('jwt', { session: false 
   })
 })
 
+
 userRouter.get('/people', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { _id, username } = req.user;
+  const { _id, username, sex } = req.user;
   let passedUsers = [];
-  await User.findOne({ username }, { likedUsers: 1, dislikedUsers: 1, superLikedUsers: 1 }, (err, doc) => {
+  await User.findOne({ username }, { likedUsers: 1, dislikedUsers: 1, superLikedUsers: 1, matches: 1 }, (err, doc) => {
     if(err){
       sendHTTPStatusAndJSON(res, 500);
     } else {
-      passedUsers = [_id, ...doc.likedUsers, ...doc.dislikedUsers, ...doc.superLikedUsers]
+      passedUsers = [_id, ...doc.likedUsers, ...doc.dislikedUsers, ...doc.superLikedUsers, ...doc.matches]
 
-      User.find({ _id: { $nin: passedUsers }}, { username: 1, firstName: 1, lastName: 1, sex: 1, essay: 1, pictures: 1}, (err, doc) => {
+      User.find({ _id: { $nin: passedUsers }, sex: { $ne : sex }}, { firstName: 1, lastName: 1, sex: 1, essay: 1, picture: 1}, (err, doc) => {
         if(err){
           sendHTTPStatusAndJSON(res, 500);
         } else {
@@ -187,7 +181,7 @@ userRouter.get('/people', passport.authenticate('jwt', { session: false }), asyn
 
 userRouter.get('/matches', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { username } = req.user;
-  User.findOne({ username }).populate('matches', 'username firstName lastName sex essay pictures').exec((err, doc) => {
+  User.findOne({ username }).populate('matches', 'username firstName lastName sex essay picture').exec((err, doc) => {
     if(err)
       sendHTTPStatusAndJSON(res, 500);
     else {
