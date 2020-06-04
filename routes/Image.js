@@ -28,9 +28,13 @@ imageRouter.post("/upload", passport.authenticate('jwt', { session: false }), up
     } else {
       if(doc.picture){
         gfs.files.findOneAndDelete({ filename: doc.picture }, (err, file) => {
-          mongoose.connection.db.collection('uploads.chunks', function(err, collection){
-            collection.deleteMany({ files_id: new ObjectId( file.value._id ) })
-          })  
+          if(err){
+            res.status(500).json({ message: { body: "Error has occured", error: true }});
+          } else {
+            mongoose.connection.db.collection('uploads.chunks', function(err, collection){
+              collection.deleteMany({ files_id: new ObjectId( file.value._id ) })
+            })  
+          }
         })
       }
       res.status(200).json({ filename })
