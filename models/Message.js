@@ -5,6 +5,10 @@ const MessageSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  sender_username: {
+    type: String,
+    required: true
+  },
   content: {
     type: String,
     required: true
