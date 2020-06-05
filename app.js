@@ -10,7 +10,6 @@ const imageRouter = require("./routes/Image");
 const methodOverride = require("method-override");
 
 const app = express();
-app.use(logger("dev"));
 app.use(cookieParser());
 app.use(express.json());
 app.use(methodOverride("_method"));
