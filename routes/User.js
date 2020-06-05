@@ -7,7 +7,7 @@ const User = require('../models/User');
 const Room = require('../models/Room');
 const Message = require('../models/Message');
 
-require('dotenv').config();
+
 
 function idCheck(req, res, next){
   const username = req.body.username;

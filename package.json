@@ -4,6 +4,9 @@
   "description": "Cloning Tinder Server",
   "main": "index.js",
   "license": "MIT",
+  "engines": {
+    "yarn": "1.21.1"
+  },
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js"
