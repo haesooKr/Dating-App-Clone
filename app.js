@@ -1,6 +1,7 @@
 
 require("./models/db");
 
+const cors = require('cors');
 const express = require("express");
 const cookieParser = require("cookie-parser");
 
@@ -10,6 +11,7 @@ const imageRouter = require("./routes/Image");
 const methodOverride = require("method-override");
 
 const app = express();
+app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(methodOverride("_method"));
