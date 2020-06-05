@@ -1,10 +1,5 @@
-// dev
 
-// ).config();
 require("./models/db");
-const logger = require("morgan");
-
-// /dev
 
 const express = require("express");
 const cookieParser = require("cookie-parser");
