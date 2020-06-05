@@ -67,10 +67,10 @@ userRouter.post('/register', (req, res) => {
 
 userRouter.post('/login', idCheck, passport.authenticate('local', { session: false }), (req, res) => {
   if(req.isAuthenticated()){
-    const { _id, username, firstName, lastName, sex, essay, role, picture } = req.user;
+    const { _id, username, firstName, lastName, sex, essay, role, picture, rooms } = req.user;
     const token = signToken(_id);
     res.cookie('access_token', token, { httpOnly: true, sameSite: true });
-    res.status(200).json({ isAuthenticated: true, user: { username, firstName, lastName, sex, essay, role, picture }});
+    res.status(200).json({ isAuthenticated: true, user: { username, firstName, lastName, sex, essay, role, picture, rooms }});
   }
 });
 
@@ -79,17 +79,9 @@ userRouter.get('/logout', passport.authenticate('jwt', { session: false }), (req
   res.json({ user: { username: "", role: "" }, success: true })
 });
 
-userRouter.get('/admin', passport.authenticate('jwt', { session: false }), (req, res) => {
-  if(req.user.role === 'admin'){
-    res.status(200).json({ message: { body: "You are an admin", error: false }})
-  } else {
-    res.status(403).json({ message: { body: "You have no access to here", error: true }})
-  }
-});
-
 userRouter.get('/authenticated', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const { username, firstName, lastName, sex, essay, role, picture } = req.user;
-  res.status(200).json({ isAuthenticated: true, user: { username, firstName, lastName, sex, essay, role, picture }});
+  const { username, firstName, lastName, sex, essay, role, picture, rooms } = req.user;
+  res.status(200).json({ isAuthenticated: true, user: { username, firstName, lastName, sex, essay, role, picture, rooms }});
 });
 
 userRouter.post('/update', passport.authenticate('jwt', { session: false }), (req, res) => {
@@ -218,22 +210,12 @@ userRouter.get('/people', passport.authenticate('jwt', { session: false }), asyn
 
 userRouter.get('/matches', passport.authenticate('jwt', { session: false }), (req, res) => {
   const { username } = req.user;
-  User.findOne({ username }).populate('matches', 'username firstName lastName sex essay picture').exec((err, doc) => {
+  User.findOne({ username }).populate('matches', 'firstName lastName essay picture rooms').exec((err, doc) => {
     if(err)
       sendHTTPStatusAndJSON(res, 500);
     else {
       res.status(200).json({ matches: doc.matches, authenticated: true });
     }
-  })
-})
-
-userRouter.get('/rooms', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const { username } = req.user;
-  User.findOne({ username }, { rooms: 1 }, (err, doc) => {
-    if(err)
-      sendHTTPStatusAndJSON(res, 500);
-    else
-      res.status(200).json({ rooms: doc.rooms, authenticate: true });
   })
 })
 
@@ -249,19 +231,19 @@ userRouter.post('/room', passport.authenticate('jwt', { session: false }), (req,
 })
 
 userRouter.post('/sendMessage', passport.authenticate('jwt', { session: false }), async (req, res) => {
-  const { username } = req.user;
+  const fullName = req.user.firstName + ' ' + req.user.lastName;
   const { content, roomId } = req.body;
-  const message = await Message.create({ sender: username, content });
-  console.log(message);
+  if(content && roomId){
+    const message = await Message.create({ sender_username: req.user.username, sender: fullName, content });
 
-  Room.findOneAndUpdate({ _id: roomId }, { $addToSet: { messages: message._id }}, (err, doc) => {
-    if(err){
-      sendHTTPStatusAndJSON(res,500);
-    } else {
-      console.log(doc);
-      res.json({ body: "Successfully sent message", error: false })
-    }
-  });
+    Room.findOneAndUpdate({ _id: roomId }, { $addToSet: { messages: message._id }}, (err, doc) => {
+      if(err){
+        sendHTTPStatusAndJSON(res,500);
+      } else {
+        res.json({ body: "Successfully sent message", error: false })
+      }
+    });
+  }
 })
 
 module.exports = userRouter;
