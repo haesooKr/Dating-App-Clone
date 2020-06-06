@@ -11,7 +11,11 @@ const imageRouter = require("./routes/Image");
 const methodOverride = require("method-override");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.ORIGIN,
+  credentials: true,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE"
+}));
 app.use(cookieParser());
 app.use(express.json());
 app.use(methodOverride("_method"));
