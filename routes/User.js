@@ -132,7 +132,7 @@ userRouter.post('/like', passport.authenticate('jwt', { session: false }), (req,
               if(err){
                 sendHTTPStatusAndJSON(res, 500);
               } else {
-                sendHTTPStatusAndJSON(res, 200, "Successfully Matched", false);
+                res.status(200).json({ room: room._id });
               }
             })
           }
@@ -179,7 +179,7 @@ userRouter.post('/superlike', passport.authenticate('jwt', { session: false }), 
         if(err){
           sendHTTPStatusAndJSON(res, 500);
         } else {
-          sendHTTPStatusAndJSON(res, 200, "Successfully superliked", false);
+          res.status(200).json({ room: room._id });
         }
       });
     }
