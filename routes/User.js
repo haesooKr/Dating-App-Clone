@@ -214,6 +214,7 @@ userRouter.get('/matches', passport.authenticate('jwt', { session: false }), (re
     if(err)
       sendHTTPStatusAndJSON(res, 500);
     else {
+      console.log(doc);
       res.status(200).json({ matches: doc.matches, authenticated: true });
     }
   })
