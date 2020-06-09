@@ -1,17 +1,35 @@
-# To Do
+# Dating App Clone Server
+( *Express + MongoDB + React + Node + Local & JWT Authentication* )
 
-<!-- DB -->
-- [] DB SCHEMA - username, password, pictures(array), address, description, sex, likedUsers, superLikedUsers, disLikedUsers, likedBy, messages ( message: user, content )
 
-<!-- User Router -->
-- [] /register route
-- [] /login route
-- [] /withdraw route
-- [] /profile route
+## MongoDB User Schema
+- Username
+- FirstName + LastName
+- Password
+- Picture
+- Email
+- Sex 
+- Role (User, Admin)
+- Picture
+- likedUsers, dislikedUsers, superlikedUsers
+- likedBy
+- matches
+- rooms (for Messages)
+- createdAt
 
-<!-- Action Router -->
-- [] /like route
-- [] /dislike route
-- [] /superlike route
-- [] /search route
-- [] /sendMessage route ***
+## Routers 
+
+### User Routers
+- register
+- login
+- logout
+- authenticated
+- update, delete (*for account*)
+- like, dislike, superlike
+- people, matches
+- room, sendMessage (*Not implement Socket.io*)
+
+### Image Routers
+- Upload (*automatically delete old picture when user uploads new picture*)
+- Show
+
